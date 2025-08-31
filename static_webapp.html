@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Школа ЕГЭ и ОГЭ</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            background: var(--tg-theme-bg-color, #ffffff);
+            color: var(--tg-theme-text-color, #000000);
+            padding: 0;
+            margin: 0;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 100%;
+            padding: 16px;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 16px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 0 16px;
+        }
+        
+        .step {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            margin: 0 4px;
+        }
+        
+        .step.active {
+            background: #667eea;
+            color: white;
+        }
+        
+        .step.completed {
+            background: #10b981;
+            color: white;
+        }
+        
+        .step.inactive {
+            background: #e5e7eb;
+            color: #6b7280;
+        }
+        
+        .step-line {
+            width: 20px;
+            height: 2px;
+            background: #e5e7eb;
+        }
+        
+        .card {
+            background: var(--tg-theme-secondary-bg-color, #f8f9fa);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .card:hover, .card.selected {
+            border-color: #667eea;
+            background: var(--tg-theme-bg-color, #ffffff);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+        }
+        
+        .card-icon {
+            font-size: 32px;
+            margin-bottom: 12px;
+            text-align: center;
+        }
+        
+        .card-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+        
+        .card-description {
+            font-size: 14px;
+            color: var(--tg-theme-hint-color, #6b7280);
+            text-align: center;
+            margin-bottom: 8px;
+        }
+        
+        .card-price {
+            font-size: 16px;
+            font-weight: bold;
+            color: #667eea;
+            text-align: center;
+        }
+        
+        .grid {
+            display: grid;
+            gap: 12px;
+        }
+        
+        .grid-2 {
+            grid-template-columns: 1fr 1fr;
+        }
+        
+        .grid-1 {
+            grid-template-columns: 1fr;
+        }
+        
+        .section {
+            display: none;
+        }
+        
+        .section.active {
+            display: block;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 16px 24px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            width: 100%;
+            margin-top: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .order-summary {
+            background: var(--tg-theme-secondary-bg-color, #f8f9fa);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+        
+        .order-summary h3 {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 12px;
+        }
+        
+        .order-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .price-total {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .price-total .amount {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            background: var(--tg-theme-secondary-bg-color, #f8f9fa);
+            border-radius: 12px;
+            padding: 16px;
+            margin: 16px 0;
+        }
+        
+        .checkbox-container input {
+            margin-right: 12px;
+            width: 20px;
+            height: 20px;
+        }
+        
+        .contact-input {
+            width: 100%;
+            padding: 16px;
+            border-radius: 12px;
+            border: 2px solid #e5e7eb;
+            font-size: 16px;
+            margin: 16px 0;
+            background: var(--tg-theme-bg-color, #ffffff);
+            color: var(--tg-theme-text-color, #000000);
+        }
+        
+        .contact-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .benefits {
+            background: var(--tg-theme-secondary-bg-color, #f8f9fa);
+            border-radius: 12px;
+            padding: 16px;
+            margin: 16px 0;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        .success-screen {
+            text-align: center;
+            padding: 40px 16px;
+        }
+        
+        .success-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+        
+        .back-btn {
+            background: var(--tg-theme-secondary-bg-color, #f8f9fa);
+            color: var(--tg-theme-text-color, #000000);
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-top: 16px;
+            cursor: pointer;
+        }
+
+        .telegram-contact {
+            background: #0088cc;
+            color: white;
+            border-radius: 12px;
+            padding: 16px;
+            margin: 20px 0;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎓 Школа ЕГЭ и ОГЭ</h1>
+        <p>Выберите курс для подготовки</p>
+    </div>
+
+    <div class="step-indicator">
+        <div class="step active" id="step1">1</div>
+        <div class="step-line"></div>
+        <div class="step inactive" id="step2">2</div>
+        <div class="step-line"></div>
+        <div class="step inactive" id="step3">3</div>
+        <div class="step-line"></div>
+        <div class="step inactive" id="step4">4</div>
+        <div class="step-line"></div>
+        <div class="step inactive" id="step5">5</div>
+    </div>
+
+    <!-- Шаг 1: Выбор экзамена -->
+    <div id="exam-section" class="section active">
+        <div class="container">
+            <h2 style="text-align: center; margin-bottom: 20px; font-size: 20px; font-weight: bold;">Выберите экзамен</h2>
+            <div class="grid grid-2">
+                <div class="card" onclick="selectExam('ege')">
+                    <div class="card-icon">🎓</div>
+                    <div class="card-title">ЕГЭ</div>
+                    <div class="card-description">11 класс</div>
+                </div>
+                <div class="card" onclick="selectExam('oge')">
+                    <div class="card-icon">📚</div>
+                    <div class="card-title">ОГЭ</div>
+                    <div class="card-description">9 класс</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Шаг 2: Выбор предмета -->
+    <div id="subject-section" class="section">
+        <div class="container">
+            <h2 style="text-align: center; margin-bottom: 20px; font-size: 20px; font-weight: bold;">Выберите предмет</h2>
+            <div id="subjects-container" class="grid grid-1">
+                <!-- Предметы загружаются динамически -->
+            </div>
+            <button class="back-btn" onclick="goToStep('exam-section', 1)">◀️ Назад</button>
+        </div>
+    </div>
+
+    <!-- Шаг 3: Выбор курса -->
+    <div id="course-section" class="section">
+        <div class="container">
+            <h2 style="text-align: center; margin-bottom: 20px; font-size: 20px; font-weight: bold;">Выберите курс</h2>
+            <div class="grid grid-1">
+                <div class="card" onclick="selectCourse('летняя_школа')">
+                    <div class="card-icon">☀️</div>
+                    <div class="card-title">Летняя школа</div>
+                    <div class="card-description">Июль-август</div>
+                    <div class="card-price">от 5000₽/мес</div>
+                </div>
+                <div class="card" onclick="selectCourse('годовой_курс')">
+                    <div class="card-icon">📅</div>
+                    <div class="card-title">Годовой курс</div>
+                    <div class="card-description">Сентябрь-май</div>
+                    <div class="card-price">от 3500₽/мес</div>
+                </div>
+                <div class="card" onclick="selectCourse('интенсив')">
+                    <div class="card-icon">⚡</div>
+                    <div class="card-title">Интенсив</div>
+                    <div class="card-description">2 недели в мае</div>
+                    <div class="card-price">7500₽</div>
+                </div>
+            </div>
+            <button class="back-btn" onclick="goToStep('subject-section', 2)">◀️ Назад</button>
+        </div>
+    </div>
+
+    <!-- Шаг 4: Выбор периода -->
+    <div id="period-section" class="section">
+        <div class="container">
+            <h2 style="text-align: center; margin-bottom: 20px; font-size: 20px; font-weight: bold;">Выберите период</h2>
+            <div id="periods-container" class="grid grid-1">
+                <!-- Периоды загружаются динамически -->
+            </div>
+            <button class="back-btn" onclick="goToStep('course-section', 3)">◀️ Назад</button>
+        </div>
+    </div>
+
+    <!-- Шаг 5: Оформление заказа -->
+    <div id="payment-section" class="section">
+        <div class="container">
+            <h2 style="text-align: center; margin-bottom: 20px; font-size: 20px; font-weight: bold;">Оформление заказа</h2>
+            
+            <div class="order-summary">
+                <h3>📋 Ваш выбор:</h3>
+                <div id="order-details"></div>
+            </div>
+
+            <div class="benefits">
+                <h3 style="margin-bottom: 12px;">✨ Что включено:</h3>
+                <div id="course-benefits-text"></div>
+            </div>
+
+            <div id="curator-option" class="checkbox-container">
+                <input type="checkbox" id="curator-checkbox">
+                <div>
+                    <div style="font-weight: bold;">👨‍🏫 Добавить куратора</div>
+                    <div style="font-size: 12px; color: var(--tg-theme-hint-color, #6b7280);">
+                        Персональная поддержка +<span id="curator-price">350</span>₽
+                    </div>
+                </div>
+            </div>
+
+            <input type="text" id="contact-input" class="contact-input" 
+                   placeholder="Ваш Telegram или телефон">
+
+            <div class="price-total">
+                <div>Итого к оплате:</div>
+                <div class="amount" id="total-price">0₽</div>
+            </div>
+
+            <div class="telegram-contact">
+                <h3 style="margin-bottom: 8px;">📞 Связь с нами:</h3>
+                <p>После нажатия кнопки ниже мы свяжемся с вами для подтверждения заказа и оплаты.</p>
+                <p style="margin-top: 8px;"><strong>Администратор: @irgegh</strong></p>
+            </div>
+
+            <button id="order-btn" class="btn-primary" onclick="createOrder()">
+                📞 Связаться для оплаты
+            </button>
+            
+            <button class="back-btn" onclick="goToStep('period-section', 4)">◀️ Назад</button>
+        </div>
+    </div>
+
+    <!-- Экран успеха -->
+    <div id="success-section" class="section">
+        <div class="success-screen">
+            <div class="success-icon">🎉</div>
+            <h2 style="font-size: 24px; margin-bottom: 16px; color: #10b981;">Заявка отправлена!</h2>
+            <p style="margin-bottom: 20px; color: var(--tg-theme-hint-color, #6b7280);">
+                Ваша заявка сохранена. Администратор @irgegh свяжется с вами в ближайшее время.
+            </p>
+            <button class="btn-primary" onclick="location.reload()">
+                Оформить еще заказ
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Данные курсов (статичные)
+        const SUBJECTS = {
+            'ege': {
+                'история': { name: 'История', emoji: '📜', description: 'Углубленная подготовка по истории России' },
+                'русский': { name: 'Русский язык', emoji: '📝', description: 'Подготовка по русскому языку и литературе' },
+                'математика': { name: 'Математика', emoji: '🔢', description: 'Профильная и базовая математика' },
+                'обществознание': { name: 'Обществознание', emoji: '🏛️', description: 'Подготовка по обществознанию' }
+            },
+            'oge': {
+                'история': { name: 'История', emoji: '📜', description: 'История России для 9 класса' },
+                'русский': { name: 'Русский язык', emoji: '📝', description: 'Русский язык для ОГЭ' },
+                'математика': { name: 'Математика', emoji: '🔢', description: 'Алгебра и геометрия для ОГЭ' },
+                'физика': { name: 'Физика', emoji: '⚛️', description: 'Физика для 9 класса' }
+            }
+        };
+
+        const COURSES = {
+            'летняя_школа': {
+                name: 'Летняя школа',
+                months: ['июль', 'август'],
+                price_per_month: 5000,
+                price_full: 8000,
+                benefits: '✅ Интенсивная подготовка за лето\n✅ Разбор всех сложных тем\n✅ Практические задания каждый день\n✅ Личная обратная связь от преподавателя\n✅ Доступ к материалам навсегда\n✅ Мини-группы до 15 человек\n✅ Гибкое расписание'
+            },
+            'годовой_курс': {
+                name: 'Годовой курс',
+                months: ['сентябрь', 'октябрь', 'ноябрь', 'декабрь', 'январь', 'февраль', 'март', 'апрель', 'май'],
+                price_per_month: 3500,
+                price_full: 28000,
+                benefits: '✅ Полное покрытие всей программы\n✅ Еженедельные занятия\n✅ Домашние задания с проверкой\n✅ Пробные экзамены каждый месяц\n✅ Индивидуальный трек прогресса\n✅ Доступ ко всем записям\n✅ Поддержка до самого экзамена\n✅ Работа в группе единомышленников'
+            },
+            'интенсив': {
+                name: 'Интенсив',
+                price: 7500,
+                benefits: '✅ Концентрированная подготовка за 2 недели\n✅ Разбор типовых заданий экзамена\n✅ Стратегии решения сложных задач\n✅ Психологическая подготовка к экзамену\n✅ Ежедневные консультации\n✅ Финальное тестирование\n✅ Работа с экзаменационным стрессом'
+            }
+        };
+
+        const CURATOR_PRICE = 350;
+
+        // Telegram Web App API
+        let tg = window.Telegram?.WebApp;
+        if (tg) {
+            tg.expand();
+            tg.MainButton.hide();
+        }
+
+        // Глобальные переменные
+        let selectedExam = '';
+        let selectedSubject = '';
+        let selectedCourse = '';
+        let selectedPeriod = '';
+        let currentStep = 1;
+
+        // Управление шагами
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById(sectionId).classList.add('active');
+        }
+
+        function updateSteps(step) {
+            currentStep = step;
+            for (let i = 1; i <= 5; i++) {
+                const stepEl = document.getElementById(`step${i}`);
+                stepEl.className = 'step ';
+                if (i < step) {
+                    stepEl.className += 'completed';
+                } else if (i === step) {
+                    stepEl.className += 'active';
+                } else {
+                    stepEl.className += 'inactive';
+                }
+            }
+        }
+
+        function goToStep(sectionId, step) {
+            showSection(sectionId);
+            updateSteps(step);
+        }
+
+        // Шаг 1: Выбор экзамена
+        function selectExam(examType) {
+            selectedExam = examType;
+            loadSubjects(examType);
+            goToStep('subject-section', 2);
+        }
+
+        // Шаг 2: Загрузка предметов
+        function loadSubjects(examType) {
+            const subjects = SUBJECTS[examType];
+            const container = document.getElementById('subjects-container');
+            container.innerHTML = '';
+            
+            Object.entries(subjects).forEach(([key, subject]) => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.onclick = () => selectSubject(key);
+                
+                card.innerHTML = `
+                    <div class="card-icon">${subject.emoji}</div>
+                    <div class="card-title">${subject.name}</div>
+                    <div class="card-description">${subject.description}</div>
+                `;
+                
+                container.appendChild(card);
+            });
+        }
+
+        // Шаг 3: Выбор предмета
+        function selectSubject(subjectKey) {
+            selectedSubject = subjectKey;
+            goToStep('course-section', 3);
+        }
+
+        // Шаг 4: Выбор курса
+        function selectCourse(courseType) {
+            selectedCourse = courseType;
+            
+            if (courseType === 'интенсив') {
+                selectedPeriod = 'интенсив';
+                showPayment();
+            } else {
+                loadPeriods(courseType);
+                goToStep('period-section', 4);
+            }
+        }
+
+        // Загрузка периодов
+        function loadPeriods(courseType) {
+            const courseInfo = COURSES[courseType];
+            const container = document.getElementById('periods-container');
+            container.innerHTML = '';
+            
+            if (courseType === 'летняя_школа') {
+                const periods = [
+                    { key: 'июль', name: '🌞 Июль', price: courseInfo.price_per_month },
+                    { key: 'август', name: '🌻 Август', price: courseInfo.price_per_month },
+                    { key: 'полностью', name: '🎯 Оба месяца', price: courseInfo.price_full, 
+                      discount: (courseInfo.price_per_month * 2) - courseInfo.price_full }
+                ];
+                
+                periods.forEach(period => {
+                    const card = document.createElement('div');
+                    card.className = 'card';
+                    card.onclick = () => selectPeriod(period.key);
+                    
+                    const discountText = period.discount ? `<div style="color: #10b981; font-size: 12px;">Скидка: ${period.discount}₽</div>` : '';
+                    
+                    card.innerHTML = `
+                        <div class="card-title">${period.name}</div>
+                        <div class="card-price">${period.price}₽</div>
+                        ${discountText}
+                    `;
+                    
+                    container.appendChild(card);
+                });
+            } else if (courseType === 'годовой_курс') {
+                // Полный курс
+                const fullCard = document.createElement('div');
+                fullCard.className = 'card';
+                fullCard.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+                fullCard.style.color = 'white';
+                fullCard.onclick = () => selectPeriod('полностью');
+                
+                const discount = (courseInfo.price_per_month * courseInfo.months.length) - courseInfo.price_full;
+                
+                fullCard.innerHTML = `
+                    <div class="card-title">🎯 Полный курс</div>
+                    <div class="card-price" style="color: white;">${courseInfo.price_full}₽</div>
+                    <div style="font-size: 12px; opacity: 0.9;">Скидка: ${discount}₽</div>
+                `;
+                
+                container.appendChild(fullCard);
+                
+                // Отдельные месяцы
+                courseInfo.months.forEach(month => {
+                    const card = document.createElement('div');
+                    card.className = 'card';
+                    card.onclick = () => selectPeriod(month);
+                    
+                    card.innerHTML = `
+                        <div class="card-title">📅 ${month.charAt(0).toUpperCase() + month.slice(1)}</div>
+                        <div class="card-price">${courseInfo.price_per_month}₽</div>
+                    `;
+                    
+                    container.appendChild(card);
+                });
+            }
+        }
+
+        // Шаг 5: Выбор периода
+        function selectPeriod(period) {
+            selectedPeriod = period;
+            showPayment();
+        }
+
+        // Показать оплату
+        function showPayment() {
+            goToStep('payment-section', 5);
+            
+            // Заполняем детали заказа
+            const examName = selectedExam === 'ege' ? 'ЕГЭ' : 'ОГЭ';
+            const subjectName = SUBJECTS[selectedExam][selectedSubject].name;
+            
+            document.getElementById('order-details').innerHTML = `
+                <div class="order-item"><span>📋 Экзамен:</span><span>${examName}</span></div>
+                <div class="order-item"><span>📚 Предмет:</span><span>${subjectName}</span></div>
+                <div class="order-item"><span>📅 Курс:</span><span>${selectedCourse.replace('_', ' ')}</span></div>
+                <div class="order-item"><span>🗓 Период:</span><span>${selectedPeriod}</span></div>
+            `;
+            
+            // Заполняем преимущества
+            const benefits = COURSES[selectedCourse].benefits;
+            document.getElementById('course-benefits-text').innerHTML = benefits.replace(/\n/g, '<br>');
+            
+            // Настраиваем куратора
+            const curatorOption = document.getElementById('curator-option');
+            if (selectedCourse === 'интенсив') {
+                curatorOption.style.display = 'none';
+            } else {
+                curatorOption.style.display = 'flex';
+                
+                let curatorPrice = CURATOR_PRICE;
+                if (selectedPeriod === 'полностью') {
+                    const monthsCount = COURSES[selectedCourse].months.length;
+                    curatorPrice = CURATOR_PRICE * monthsCount;
+                }
+                
+                document.getElementById('curator-price').textContent = curatorPrice;
+            }
+            
+            // Обновляем цену
+            updateTotalPrice();
+            
+            // Обработчик куратора
+            document.getElementById('curator-checkbox').addEventListener('change', updateTotalPrice);
+        }
+
+        // Обновление цены
+        function updateTotalPrice() {
+            let basePrice = 0;
+            
+            if (selectedCourse === 'интенсив') {
+                basePrice = COURSES[selectedCourse].price;
+            } else {
+                const courseInfo = COURSES[selectedCourse];
+                if (selectedPeriod === 'полностью') {
+                    basePrice = courseInfo.price_full;
+                } else {
+                    basePrice = courseInfo.price_per_month;
+                }
+            }
+            
+            let curatorPrice = 0;
+            if (selectedCourse !== 'интенсив' && document.getElementById('curator-checkbox').checked) {
+                curatorPrice = parseInt(document.getElementById('curator-price').textContent);
+            }
+            
+            const totalPrice = basePrice + curatorPrice;
+            document.getElementById('total-price').textContent = `${totalPrice}₽`;
+        }
+
+        // Создание заказа
+        function createOrder() {
+            const contact = document.getElementById('contact-input').value.trim();
+            
+            if (!contact) {
+                if (tg) {
+                    tg.showAlert('Пожалуйста, укажите контактную информацию');
+                } else {
+                    alert('Пожалуйста, укажите контактную информацию');
+                }
+                return;
+            }
+            
+            const orderBtn = document.getElementById('order-btn');
+            orderBtn.disabled = true;
+            orderBtn.textContent = 'Отправляем...';
+            
+            // Формируем сообщение для Telegram
+            const examName = selectedExam === 'ege' ? 'ЕГЭ' : 'ОГЭ';
+            const subjectName = SUBJECTS[selectedExam][selectedSubject].name;
+            const withCurator = document.getElementById('curator-checkbox').checked;
+            const totalPrice = document.getElementById('total-price').textContent;
+            
+            const orderMessage = `🛒 НОВЫЙ ЗАКАЗ С САЙТА
+
+📋 Экзамен: ${examName}
+📚 Предмет: ${subjectName}
+📅 Курс: ${selectedCourse.replace('_', ' ')}
+🗓 Период: ${selectedPeriod}
+👨‍🏫 Куратор: ${withCurator ? 'Да' : 'Нет'}
+💰 Итого: ${totalPrice}
+
+📞 Контакт: ${contact}
+
+#заказ #${selectedExam} #${selectedSubject}`;
+
+            // Сохраняем в localStorage для передачи админу
+            localStorage.setItem('newOrder', JSON.stringify({
+                exam: examName,
+                subject: subjectName,
+                course: selectedCourse,
+                period: selectedPeriod,
+                curator: withCurator,
+                price: totalPrice,
+                contact: contact,
+                message: orderMessage
+            }));
+            
+            // Показываем экран успеха
+            setTimeout(() => {
+                goToStep('success-section', 5);
+                orderBtn.disabled = false;
+                orderBtn.textContent = '📞 Связаться для оплаты';
+                
+                if (tg) {
+                    tg.showAlert('Заявка отправлена! Мы свяжемся с вами.');
+                }
+            }, 1000);
+        }
+
+        // Инициализация
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Приложение загружено');
+            
+            // Настройка темы Telegram
+            if (tg && tg.themeParams) {
+                document.documentElement.style.setProperty('--tg-theme-bg-color', tg.themeParams.bg_color);
+                document.documentElement.style.setProperty('--tg-theme-text-color', tg.themeParams.text_color);
+                document.documentElement.style.setProperty('--tg-theme-hint-color', tg.themeParams.hint_color);
+                document.documentElement.style.setProperty('--tg-theme-secondary-bg-color', tg.themeParams.secondary_bg_color);
+            }
+        });
+    </script>
+</body>
+</html>
